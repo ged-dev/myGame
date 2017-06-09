@@ -1,12 +1,40 @@
 let game = new Phaser.Game(1580, 780, Phaser.AUTO, 'game',
         {preload: preload, create: create, update: update, render: render});
 
+var widthWindow = 780;
+var heightWindow = 1580;
 var floorGroup;
 var obstacleGroup;
 var player;
 var heightMap = 3078;
 var widthMap = 4000;
-let walkLeft = true;
+var group;
+var walkLeft = true;
+var life = 100;
+var loose = 0;
+var win = 0;
+
+
+
+function updateCounter() {
+
+    counter--;
+
+    text.setText('Try to survive : ' + counter + ' seconds');
+
+}
+
+// generate random number
+function rndNum(num) {
+    return Math.round(Math.random() * num);
+    
+}
+
+function addAnimationToSprites()
+{
+    skeleton.animations.add('walkRight', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 10, true);
+    skeleton.animations.add('walkLeft', [25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13], 10, true);
+}
 
 function preload() 
 {
@@ -31,38 +59,85 @@ function preload()
 	 // set the middle of the world in the middle of the screen
 	    game.iso.anchor.setTo(0.5, 0);
 
-	// Start the physical system
-	    game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE);    
-
 };
+
+var counter = 300;
+var text = 0;
+
 
 function create() 
 {
+    // Init physic
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.isoArcade.gravity.setTo(0, 0, -500);
+
+    var graphics = game.add.graphics(100, 100);
+
 	// Couleur de fond
 	game.stage.backgroundColor = "#DFE2CF";
 	
-	// Init des groupes de calques
+	// Init des GROUP CALQUES
 	floorGroup = game.add.group();
 	grassGroup = game.add.group();
+    //group = game.add.physicsGroup();
 	obstacleGroup = game.add.group();
+    game.physics.isoArcade.enable(obstacleGroup);
+
 
 	floorTile = game.add.isoSprite(xt, yt, 0, 'ground', 0, floorGroup);
    	floorTile.anchor.set(0.5);
-   	skeleton = game.add.isoSprite(400, 300, 0, 'skeleton', 0, obstacleGroup);
-   	skeleton.scale.setTo(1.5, 1.5);
-   	player = game.add.isoSprite(350, 280, 0, 'characterAnim', 0, obstacleGroup);
+
+    
+
+    // TIMER
+    text = game.add.text(widthWindow , 20, 'Try to survive : 300 seconds', { font: "28px Arial", fill: "black", align: "center" });
+    game.time.events.loop(Phaser.Timer.SECOND, updateCounter, this);
+    text.fixedToCamera = true;
+    text.anchor.setTo(0.5, 0.5);
+
+
+    // CREATION DES ENNEMIS SKELETTES
+    for (var i = 0; i < 9; i++)
+    {
+
+        skeleton = game.add.isoSprite(game.rnd.between(1580, 0), game.rnd.between(0, 600), 0, 'skeleton', 0, obstacleGroup);
+        game.physics.isoArcade.enable(skeleton);
+        
+        addAnimationToSprites();
+        // Permet au sprite de ne pas tomber dans le vide
+        skeleton.body.collideWorldBounds = true;
+        skeleton.body.velocity.x = game.rnd.between(50, 70);
+        skeleton.animations.play('walkRight');
+        skeleton.scale.setTo(1.5, 1.5);
+    }   
+
+    for (var i = 0; i < 9; i++)
+    {
+
+        skeleton = game.add.isoSprite(game.rnd.between(1580, 0), game.rnd.between(0, 600), 0, 'skeleton', 0, obstacleGroup);
+        game.physics.isoArcade.enable(skeleton);
+        
+        addAnimationToSprites();
+        // Permet au sprite de ne pas tomber dans le vide
+        skeleton.body.collideWorldBounds = true;
+        skeleton.body.velocity.y = game.rnd.between(50, 70);
+        skeleton.animations.play('walkLeft');
+        skeleton.scale.setTo(1.5, 1.5);
+    }  
+
+    // FIN CREATION ENNEMIS
+
+    // PLAYER
+   	player = game.add.isoSprite(widthWindow, heightWindow, 0, 'characterAnim', 0);
    	player.scale.setTo(0.5, 0.5);
-   	//skeleton = game.add.sprite(20, 20, 'skeleton');
+    game.physics.isoArcade.enable(player);
+        // Permet au sprite de ne pas tomber dans le vide
+    player.body.collideWorldBounds = true;
 
 
-   	skeleton.animations.add('walkRight', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 10, true);
-   	skeleton.animations.add('walkLeft', [25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13], 10, true);
-
-   	// Init physic
-   	game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.physics.isoArcade.gravity.setTo(0, 0, -500);
-
-   	// add the animations from the spritesheet
+  
+    
+   	// add the ANIMATIONS from the spritesheet
     player.animations.add('S', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
     player.animations.add('SW', [8, 9, 10, 11, 12, 13, 14, 15], 10, true);
     player.animations.add('W', [16, 17, 18, 19, 20, 21, 22, 23], 10, true);
@@ -74,22 +149,10 @@ function create()
      
     player.anchor.set(0.5);
 
-    // enable physics on the player
-    game.physics.isoArcade.enable(player);
-    // Permet au sprite de ne pas tomber dans le vide
-    player.body.collideWorldBounds = true;
+    
 
-    game.physics.isoArcade.enable(skeleton);
-    // Permet au sprite de ne pas tomber dans le vide
-    skeleton.body.collideWorldBounds = true;
-    skeleton.body.velocity.x = 0;
-    skeleton.body.velocity.y = 0;
  
- 	// generate random number
-	function rndNum(num) {
-		return Math.round(Math.random() * num);
-		
-	}
+ 	
 
     // ---------- CREATION DE LA MAP ---------- \\
     for (var xt = 2500; xt > 0; xt -= 32) 
@@ -101,7 +164,7 @@ function create()
         }
     }
 
-    	        // create the grass tiles randomly
+    // create the grass tiles randomly
     var grassTile;
     for (var xt = 2048; xt > 0; xt -= 32) {
         for (var yt = 2048; yt > 0; yt -= 32) {
@@ -128,8 +191,30 @@ function create()
         }
     }
 
+    // --------------  HEALTHBAR -------------- \\ 
+    var barConfig = 
+    {
+        x: 100, 
+        y: 100, 
+        width:200, 
+        height:30,
+        bg: {
+            color: 'red'
+        }, 
+        bar : 
+        { 
+            color : 'green'
+        }
+    };
+    this.myHealthBar = new HealthBar(game, barConfig);
+    this.myHealthBar.setPercent(100); 
+
+
+    
 
     game.camera.follow(player);
+    graphics.beginFill(0xFF0000, 1);
+    graphics.drawCircle(player.body.x, player.body.x, 100);
 
 
     // ---------- KEYBOARD ------------- \\ 
@@ -141,33 +226,35 @@ function create()
     upButton = this.input.keyboard.addKey(Phaser.KeyCode.Z);
     rightButton = this.input.keyboard.addKey(Phaser.KeyCode.D);
 
+
 };
 function update() 
 {
 	player.body.velocity.x = 0;
-	player.body.velocity.y = 0;
+    player.body.velocity.y = 0;
+    this.myHealthBar.setPosition(this.camera.position.x + 130,this.camera.position.y + 60);
 
-	
-	ia();
+    var that = this;
 
-	console.log(skeleton.body.x);
+    game.physics.isoArcade.collide(player, obstacleGroup, function(){
+        console.log(life);
+        life -= 5;
+        that.myHealthBar.setPercent(life); 
+    });
 
-	//console.log(skeleton.body.x);
+    
+    
 
-	// if(game.physics.arcade.checkCollision.right)
-	// {
-	// 	skeleton.animations.play('walkLeft');
-	// 	skeleton.body.velocity.x = -50;
-	// 	console.log()
-	// }
+    
 
+    gameOver();
+
+    // PLAYER INPUT KEYBOARD 
 	 if (cursors.left.isDown || leftButton.isDown)
     {
         //  Move to the left
         player.body.velocity.x = -300;
         player.animations.play('NW');
-
-
 
     } else if (cursors.right.isDown || rightButton.isDown)
     {
@@ -175,7 +262,6 @@ function update()
         player.body.velocity.x = 300;
         player.animations.play('SE');
         
-
     } else if (cursors.up.isDown || upButton.isDown)
     {
         //  Stand still
@@ -192,8 +278,11 @@ function update()
     }
     else
     {
-        //  Stand still
         player.animations.stop();
     }
 };
-function render() {};
+
+function render() 
+{
+    
+};
