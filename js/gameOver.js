@@ -2,7 +2,7 @@ function gameOver(){
 	if ((life <= 0 || energy<=0) && loose == 0)
 	{
 		textGameOver = game.add.text(widthWindow - 220, 150, 'Game Over', { font: "96px Arial", fill: "red", align: "center" });
-        textGameOverLine2 = game.add.text(widthWindow - 250, 280, 'Vous avez survécu ' + (120-counter) + ' secondes', { font: "40px Arial", fill: "red", align: "center" });
+        textGameOverLine2 = game.add.text(widthWindow - 250, 280, 'Vous avez survécu ' + (counterMax-counter) + ' secondes', { font: "40px Arial", fill: "red", align: "center" });
         textGameOver.fixedToCamera = true;
         textGameOverLine2.fixedToCamera = true;
 		player.kill();

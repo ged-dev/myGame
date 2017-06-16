@@ -16,7 +16,7 @@ var loose = 0;
 var win = 0;
 var ennemy = [];
 var lightState = 0;
-var counter = 160;
+var counter = counterMax = 160;
 var text = 0;
 var energy = 100;
 var energyLosingValue = 0.07;
